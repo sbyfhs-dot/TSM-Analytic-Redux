@@ -3,21 +3,26 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 BUILD_DIR="$ROOT_DIR/build"
+DIST_DIR="$ROOT_DIR/dist"
 APPDIR="$BUILD_DIR/TSMAnalytics.AppDir"
-VENV_DIR="$BUILD_DIR/.venv-appimage"
+VENV_DIR="$ROOT_DIR/.venv-appimage"
+APPIMAGE_TOOL="$BUILD_DIR/appimagetool"
+APPIMAGE_NAME="TSM-Analytics-x86_64.AppImage"
+APPIMAGE_PATH="$DIST_DIR/$APPIMAGE_NAME"
 
-mkdir -p "$BUILD_DIR"
+mkdir -p "$BUILD_DIR" "$DIST_DIR"
 
 if [[ ! -d "$VENV_DIR" ]]; then
   python3 -m venv "$VENV_DIR"
 fi
 
+# shellcheck disable=SC1091
 source "$VENV_DIR/bin/activate"
 pip install --upgrade pip
 pip install -r "$ROOT_DIR/requirements-build.txt"
 
 cd "$ROOT_DIR"
-rm -rf build dist *.spec "$APPDIR" "$ROOT_DIR/TSM-Analytics-x86_64.AppImage"
+rm -rf "$APPDIR" "$DIST_DIR/TSMAnalytics" "$ROOT_DIR/TSMAnalytics.spec" "$APPIMAGE_PATH"
 
 pyinstaller \
   --noconfirm \
@@ -52,11 +57,12 @@ exec "$HERE/usr/bin/TSMAnalytics/TSMAnalytics" "$@"
 APPRUN
 chmod +x "$APPDIR/AppRun"
 
-if [[ ! -x "$BUILD_DIR/appimagetool" ]]; then
-  curl -L "https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage" -o "$BUILD_DIR/appimagetool"
-  chmod +x "$BUILD_DIR/appimagetool"
+if [[ ! -x "$APPIMAGE_TOOL" ]]; then
+  curl -L "https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage" -o "$APPIMAGE_TOOL"
+  chmod +x "$APPIMAGE_TOOL"
 fi
 
-ARCH=x86_64 "$BUILD_DIR/appimagetool" "$APPDIR" "$ROOT_DIR/TSM-Analytics-x86_64.AppImage"
+ARCH=x86_64 "$APPIMAGE_TOOL" "$APPDIR" "$APPIMAGE_PATH"
+chmod +x "$APPIMAGE_PATH"
 
-echo "Built AppImage: $ROOT_DIR/TSM-Analytics-x86_64.AppImage"
+echo "Built AppImage: $APPIMAGE_PATH"
