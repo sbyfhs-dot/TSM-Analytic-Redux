@@ -1,0 +1,53 @@
+name: Release AppImage
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Build AppImage
+        run: ./scripts/build_appimage.sh
+
+      - name: Verify AppImage output
+        run: |
+          set -euo pipefail
+          APPIMAGE="dist/TSM-Analytics-x86_64.AppImage"
+          if [[ ! -f "$APPIMAGE" ]]; then
+            echo "ERROR: Expected AppImage not found at $APPIMAGE"
+            exit 1
+          fi
+          if [[ ! -x "$APPIMAGE" ]]; then
+            echo "ERROR: AppImage exists but is not executable: $APPIMAGE"
+            exit 1
+          fi
+
+      - name: Generate SHA256 checksums
+        run: |
+          set -euo pipefail
+          cd dist
+          sha256sum TSM-Analytics-x86_64.AppImage > SHA256SUMS.txt
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          files: |
+            dist/TSM-Analytics-x86_64.AppImage
+            dist/SHA256SUMS.txt
+          fail_on_unmatched_files: true
