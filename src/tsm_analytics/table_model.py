@@ -25,10 +25,15 @@ class DataFrameTableModel(QAbstractTableModel):
         return len(self._frame.columns)
 
     def data(self, index: QModelIndex, role: int = Qt.DisplayRole):
-        if not index.isValid() or role not in (Qt.DisplayRole, Qt.EditRole):
+        if not index.isValid():
             return None
 
         value = self._frame.iloc[index.row(), index.column()]
+        if role == Qt.ToolTipRole:
+            return str(value)
+        if role not in (Qt.DisplayRole, Qt.EditRole):
+            return None
+
         if hasattr(value, "strftime"):
             return value.strftime("%Y-%m-%d %H:%M:%S")
         if isinstance(value, float):

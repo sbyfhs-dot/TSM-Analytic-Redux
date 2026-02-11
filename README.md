@@ -18,6 +18,9 @@ It provides:
 - Export chart to PNG
 - Export normalized data to CSV
 
+- Classic tailoring item ID→name mapping via `data/item_names.json`
+- Copper prices normalized to integer copper plus formatted `Xg Ys Zc` displays
+
 ## Where the source CSV comes from
 
 From the TSM Desktop App:
@@ -101,3 +104,26 @@ Output:
    ```
 3. GitHub Actions runs `.github/workflows/release-appimage.yml` on that tag.
 4. CI builds `dist/TSM-Analytics-x86_64.AppImage`, verifies it is executable, generates `dist/SHA256SUMS.txt`, then creates/updates the GitHub Release for the tag and uploads both files as release assets.
+
+
+## Classic tailoring mapping file
+
+- Mapping file path: `data/item_names.json`
+- Format: JSON object where key is item ID as string and value is display name.
+- Example:
+  ```json
+  {
+    "4306": "Silk Cloth",
+    "4338": "Mageweave Cloth"
+  }
+  ```
+- To add support for more items, append new `"<item_id>": "<Item Name>"` entries and restart the app.
+
+## Gold / silver / copper formatting
+
+- Raw sale prices are treated as **integer copper** (`price_copper`).
+- The app derives:
+  - `price_display` as `Xg Ys Zc` (for example `1s 50c`, `1g 5s 0c`)
+  - `total_copper` as `price_copper * quantity`
+  - `total_display` in `Xg Ys Zc` format
+- Charts aggregate numeric totals in gold internally, while hover text and table/export include human-readable g/s/c fields.
