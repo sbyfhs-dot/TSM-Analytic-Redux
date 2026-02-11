@@ -26,11 +26,14 @@ From the TSM Desktop App:
 
 ## Tech stack
 
-- Python 3.11+
-- PySide6 (GUI)
+- Python 3.11+ (including Python 3.14)
+- PySide6 `>=6.10.1,<6.11` (GUI; supports modern Python including 3.14)
 - pandas (CSV parsing/transforms)
 - matplotlib (chart rendering)
 - PyInstaller + AppImageKit `appimagetool` for AppImage packaging
+
+
+> Python 3.14 note: the build/runtime dependency range uses `PySide6>=6.10.1,<6.11` so pip can resolve compatible wheels on Python 3.14+.
 
 ## Run from source
 
